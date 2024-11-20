@@ -1,0 +1,45 @@
+<html>
+<style>
+table {
+	font-family: arial, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+td, th {
+	border: 1px solid #dddddd;
+	text-align: left;
+	padding: 8px;
+}
+
+tr:nth-child(even) {
+	background-color: #dddddd;
+}
+</style>
+
+<h1>
+	MAVEN SDC {{ affected_components.keys()|join(',') }} Status </h1><br />
+
+	<h2>Details - Job ID {{ job_id }} </h2>
+	<table>
+		<tr>
+			<th>Event</th>
+			<th>Time</th>
+			<th>Details</th>
+		</tr>
+		{%- for comp_id, event_map in affected_components.items() %} 
+		  {%- for evt_id, statuses in event_map.items() %} 
+		    {%- for item in statuses %}
+				<tr>
+					<td>{{ evt_id }}</td>
+					<td>{{ item.timetag.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+					<td>{{ item.description.replace('\n','<br />') }}
+					</td>
+				</tr>
+			{%- endfor %} 
+		  {%- endfor %} 
+	    {%- endfor %}
+	</table>
+	
+	
+</html>

@@ -1,0 +1,4 @@
+ipython
+pytest
+mock
+inject==4.3.1

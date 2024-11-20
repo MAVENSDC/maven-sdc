@@ -1,0 +1,68 @@
+
+<style>
+table {
+	font-family: arial, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+td, th {
+	border: 1px solid #dddddd;
+	text-align: left;
+	padding: 8px;
+}
+
+tr:nth-child(even) {
+	background-color: #dddddd;
+}
+</style>
+
+<h1>
+	MAVEN SDC {{ affected_components.keys()|join(',') }} Started</h1> <br />
+
+	<h2>Summary</h2>
+	<table>
+		<tr>
+			<th>Component</th>
+			<th>Event</th>
+			<th>Most Recent Start Time</th>
+		</tr>
+		{%- for comp_id, event_map in affected_components.items() %} 
+		    {%- for evt_id in event_map %}
+			<tr>
+				<td>{{ comp_id }}</td>
+				<td>{{ evt_id }}</td>
+				<td>{{ event_map[evt_id][-1].timetag.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+			</tr>
+		    {%- endfor %} 
+	    {%- endfor %}
+	</table>
+	<br>
+
+	<h2>Details</h2>
+<table>
+	<tr>
+		<th>Component</th>
+		<th>Event</th>
+		<th>Time </th>
+		<th>Summary </th>
+		<th>Details </th>
+	</tr>
+	{%- for comp_id, event_map in affected_components.items() %}
+	    {%- for evt_id, statuses in event_map.items() %}
+	    	{%- for item in statuses %}
+			<tr>
+				<td>{{ comp_id }}</td>
+				<td>{{ evt_id }}</td>
+				<td>{{ item.timetag.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+				<td>{{ item.summary.replace('\n','<br/>')  }}</td>
+				{% if item.description %}
+					<td>{{ item.description.replace('\n','<br/>')  }}</td>
+				{% else %}
+					<td></td>
+				{% endif %}
+			</tr>
+			{%- endfor %}
+		{%- endfor %}
+	{%- endfor %}
+</table>

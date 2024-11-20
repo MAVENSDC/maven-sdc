@@ -1,0 +1,7 @@
+{
+	"name": "MAVEN Development",
+ 	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"postCreateCommand": "pip install -r requirements_development.txt -r requirements.txt"
+}

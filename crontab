@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+VENV_ACTIVATE=/maven/mavenpro/venvs/maven_prod/bin/activate
+SCRIPTS_DIRECTORY=/maven/mavenpro/maven/scripts
+
+*/10 * * * * export MAVEN_PYTHON_ENV=production_update;source $VENV_ACTIVATE && $SCRIPTS_DIRECTORY/maven_dropbox_mgr/maven-dropbox-mgr.sh 
