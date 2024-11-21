@@ -104,7 +104,6 @@ def run_summary_status(components,
     query = query.order_by(MavenStatus.job_id.desc(), MavenStatus.timetag.desc()).limit(max_num_status)
 
     statuses = query.all()
-
     if statuses is None or len(statuses) == 0:
         return
 
@@ -123,9 +122,8 @@ def run_summary_status(components,
     for _next_job in job_statuses:
         # Pretty Print Info
         component_statuses = job_statuses[_next_job]
-
-        for _next in component_statuses:
-            evt_keys = component_statuses[_next].keys()
+        for _next in list(component_statuses.keys()): 
+            evt_keys = list(component_statuses[_next].keys())
             for _next_event in evt_keys:
                 component_statuses[_next][pretty_print(_next_event)] = component_statuses[_next].pop(_next_event)
             component_statuses[pretty_print(_next)] = component_statuses.pop(_next)
