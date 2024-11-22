@@ -4,7 +4,7 @@ psycopg2-binary
 pytz
 python-dateutil
 click
-cx-Oracle
+oracledb
 Flask
 Flask-Cors
 Inject==4.3.1
