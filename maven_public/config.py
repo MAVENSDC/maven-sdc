@@ -45,7 +45,7 @@ else:
                      "maven.mag.calibrated:data.pc%22",
                      "maven.mag.calibrated:data.pl%22",
                      "maven.mag.calibrated:data.ss%22",
-                     "maven.insitu.calibrated.data.kp%22",
+                     "maven.insitu.calibrated:data.kp%22",
                      "maven.sep.calibrated:data.anc%22",
                      "maven.sep.calibrated:data.counts%22",
                      "maven.sep.calibrated:data.spec%22",
