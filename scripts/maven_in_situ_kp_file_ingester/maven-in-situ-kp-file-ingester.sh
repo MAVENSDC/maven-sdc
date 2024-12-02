@@ -5,4 +5,6 @@
 #
 # Kim Kokkonen 2014-09-02
 
-maven-in-situ-kp-file-ingester.py /maven/data/sci/kp/insitu
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+python3 "$SCRIPT_DIR/maven-in-situ-kp-file-ingester.py" "/maven/data/sci/kp/insitu"
