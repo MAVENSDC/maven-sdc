@@ -8,6 +8,7 @@
 import logging
 import os
 from collections import namedtuple
+from contextlib import contextmanager
 from multiprocessing import Pool, Lock, current_process
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -30,6 +31,23 @@ KpFilesStatus = namedtuple('KpFilesStatus', 'new updated complete deprecated sta
 FullNameVersionRevision = namedtuple('FullNameVersionRevision', 'fully_qualified_name version revision')
 
 proc_lock = None
+
+@contextmanager
+def create_logger(logger_name):
+    local_logger = logging.getLogger(logger_name)
+    if os.environ[constants.python_env] == 'testing':
+        handler = logging.NullHandler()
+    else:
+        handler = logging.FileHandler(os.path.join(log_path, logger_name))
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(threadName)s - %(name)s: '
+                                              '%(levelname)s L%(lineno)d %(message)s'))
+    local_logger.addHandler(handler)
+    local_logger.setLevel(logging.DEBUG)
+    try:
+        yield local_logger
+    finally:
+        handler.close()
+        local_logger.removeHandler(handler)
 
 
 def is_in_situ_kp_file(file_path):
@@ -182,33 +200,25 @@ def ingest_entry_point(new_file):
     proc_name = current_process().name
     logger_name = ('maven_in_situ_kp_ingest.{0}.log').format(proc_name)
     local_logger = logging.getLogger(logger_name)
-    if os.environ[constants.python_env] == 'testing':
-        local_logger.addHandler(logging.NullHandler())
-    else:
-        fh = logging.FileHandler(os.path.join(log_path, logger_name))
-        fh.setFormatter(logging.Formatter('%(asctime)s - %(threadName)s - %(name)s: '
-                                          '%(levelname)s L%(lineno)d %(message)s'))
-        local_logger.addHandler(fh)
-        local_logger.setLevel(logging.DEBUG)
-
-    try:
-        local_logger.info("Ingesting in-situ KP file %s", new_file)
-        with insitu_file_processor(new_file, db_session, engine, lock, local_logger) as f:
-            start_time = time_utilities.utc_now()
-            f.ingest_data()
-            local_logger.info("Ingesting in-situ KP file %s took %s", new_file, time_utilities.utc_now() - start_time)
-    except Exception as e:
-        local_logger.exception("Exception during ingest of %s", new_file)
-        err_msg = ('In-situ ingest failed for {0} because of {1}').format(new_file, repr(e))
-        # TODO - Do we need Job ID?
-        status.add_exception_status(component_id=MAVEN_SDC_COMPONENT.KP_INGESTER,
-                                    event_id=MAVEN_SDC_EVENTS.FAIL,
-                                    summary=err_msg)
-        # Update status to ERROR
-        return new_file, -1
-    else:
-        # Update status to COMPLETE
-        return new_file, 2
+    with create_logger(logger_name) as local_logger:
+        try:
+            local_logger.info("Ingesting in-situ KP file %s", new_file)
+            with insitu_file_processor(new_file, db_session, engine, lock, local_logger) as f:
+                start_time = time_utilities.utc_now()
+                f.ingest_data()
+                local_logger.info("Ingesting in-situ KP file %s took %s", new_file, time_utilities.utc_now() - start_time)
+        except Exception as e:
+            local_logger.exception("Exception during ingest of %s", new_file)
+            err_msg = ('In-situ ingest failed for {0} because of {1}').format(new_file, repr(e))
+            # TODO - Do we need Job ID?
+            status.add_exception_status(component_id=MAVEN_SDC_COMPONENT.KP_INGESTER,
+                                        event_id=MAVEN_SDC_EVENTS.FAIL,
+                                        summary=err_msg)
+            # Update status to ERROR
+            return new_file, -1
+        else:
+            # Update status to COMPLETE
+            return new_file, 2
 
 
 def initialize_lock(lock):
