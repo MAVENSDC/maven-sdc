@@ -497,7 +497,7 @@ class insitu_file_processor():
 
         for next_format_tuple in format_data:
             next_format = next_format_tuple[1]
-            self.logger.debug('Processing format %s', next_format)
+            #self.logger.debug('Processing format %s', next_format)
             last_column_idx = next_format.column_idx if next_format.column_idx > last_column_idx else last_column_idx
             query_parameter_name = ''
             if next_format.is_time:  # is the time format
