@@ -43,6 +43,7 @@ def create_logger(logger_name):
                                               '%(levelname)s L%(lineno)d %(message)s'))
     local_logger.addHandler(handler)
     local_logger.setLevel(logging.DEBUG)
+    local_logger.propagate = False  
     try:
         yield local_logger
     finally:
@@ -199,7 +200,6 @@ def ingest_entry_point(new_file):
     lock = proc_lock
     proc_name = current_process().name
     logger_name = ('maven_in_situ_kp_ingest.{0}.log').format(proc_name)
-    local_logger = logging.getLogger(logger_name)
     with create_logger(logger_name) as local_logger:
         try:
             local_logger.info("Ingesting in-situ KP file %s", new_file)
