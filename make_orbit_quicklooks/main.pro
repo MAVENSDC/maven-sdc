@@ -3,7 +3,7 @@ CD, CURRENT=c
 
 ;Tell IDL where to look for code
 !PATH = !PATH + ':' +EXPAND_PATH('+'+c)
-!PATH = !PATH + ':' +EXPAND_PATH('+/tools/spedas/')
+!PATH = !PATH + ':' +EXPAND_PATH('+/maven/mavenpro/spedas/')
 
 ;Register the SPICE toolkit
 dlm_register, '/tools/icy/lib/icy.dlm' 
