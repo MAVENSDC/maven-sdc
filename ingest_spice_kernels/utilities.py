@@ -29,6 +29,10 @@ def move_copy_update_permissions(src_file, dest_file, permissions_flag, move):
     the provided permissions_flag
     Arguments:
         move: false (copies), true (moves)'''
+    print(f"source file: {src_file}")
+    print(f"dest file: {dest_file}")
+    print(f"permissions: {permissions_flag}")
+    print(f"moving? : {move}")
     assert os.path.isfile(src_file), "Not a file? %s" % src_file
     if os.path.isfile(dest_file):
         if mvn_utils.files_are_same(src_file,dest_file):

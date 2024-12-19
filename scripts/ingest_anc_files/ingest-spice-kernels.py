@@ -12,6 +12,4 @@ def main():
     utilities.ingest_spice_files()
 
 if __name__ == "__main__":
-    with job.StatusCronJob(MAVEN_SDC_COMPONENT.SPICE_INGESTER) as job:
-        job.run(proc=main,
-                proc_args={})
+    main()
