@@ -19,6 +19,7 @@ def split_files(source_directory):
     SPICE kernels.
     '''
     all_fns = os.listdir(source_directory)
+    print(f"Files to move: {all_fns}")
     matching_fns = [fn for fn in all_fns if file_pattern.matches([anc_config.anc_spice_general_regex], fn)]
     non_matching_fns = list(set(all_fns) - set(matching_fns))
     return matching_fns, non_matching_fns
@@ -31,7 +32,6 @@ def move_copy_update_permissions(src_file, dest_file, permissions_flag, move):
         move: false (copies), true (moves)'''
     print(f"source file: {src_file}")
     print(f"dest file: {dest_file}")
-    print(f"permissions: {permissions_flag}")
     print(f"moving? : {move}")
     assert os.path.isfile(src_file), "Not a file? %s" % src_file
     if os.path.isfile(dest_file):
@@ -48,6 +48,7 @@ def move_copy_update_permissions(src_file, dest_file, permissions_flag, move):
         # Ensure the moved/copied file is world readable
         mode = os.stat(dest_file).st_mode
         with_permissions_flag = mode | permissions_flag
+        print(f"permissions: {with_permissions_flag}")
         os.chmod(dest_file, with_permissions_flag)
 
 
