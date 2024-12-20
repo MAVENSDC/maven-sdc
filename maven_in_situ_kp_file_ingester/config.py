@@ -14,13 +14,6 @@ max_query_parameter_name_length = 63
 # Size of KP data inserts
 batch_size = 1000
 
-# Process Pool Size
-pool_size = 1
-
-# Number of threads working per process on inserts
-# if less than 2 no threads are created.
-num_threads = 1
-
 a16_default_conversions = {'nan': float('nan')}
 
 '''

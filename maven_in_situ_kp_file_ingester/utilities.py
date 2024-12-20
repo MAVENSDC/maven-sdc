@@ -9,19 +9,15 @@ import logging
 import os
 from collections import namedtuple
 from contextlib import contextmanager
-from multiprocessing import Pool, Lock, current_process
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from multiprocessing import current_process
 from sqlalchemy import and_
 
 from maven_database import db_session, models
 from maven_database.database import engine
-from maven_database.database import config as proc_config
 from maven_utilities import file_pattern, maven_config, constants, time_utilities
 from maven_utilities.log_config import log_path
 from maven_utilities.utilities import get_file_root_plus_extension_with_version_and_revision
 from .in_situ_kp_file_processor import add_kp_files_metadata_entry, insitu_file_processor
-from .in_situ_progress import InSituIngestProgress
 from . import config
 from maven_status import status, MAVEN_SDC_COMPONENT, MAVEN_SDC_EVENTS
 
@@ -245,8 +241,6 @@ def ingest_in_situ_kp_data(root_dir):
         [f[0] for f in current_kp_file_status.new]
     )
 
-    # A subprocess from the pool is given a task and the callback function
-    # is called with the return result
     for fp in latest_new_files:
        ingest_entry_point(fp)
 

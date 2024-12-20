@@ -108,12 +108,13 @@ def main(arguments):
         except ProgrammingError:  # Table didn't exist
             pass
 
-    for t in insitu_tables:
-        # SQLAlchemy doesn't have a builtin means to alter tables
-        database.engine.execute('ALTER TABLE {0} RENAME TO {1}'.format(t.name + tmp_table_suffix, t.name))
-        database.engine.execute('GRANT ALL privileges ON TABLE {0} to mavenmgr'.format(t.name))
-        database.engine.execute('GRANT SELECT ON TABLE {0} to mavendb'.format(t.name))
-        database.engine.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE {0} to mavenpro'.format(t.name))
+    with database.engine.connect() as conn:
+        for t in insitu_tables:
+            # SQLAlchemy doesn't have a builtin means to alter tables
+            conn.execute('ALTER TABLE {0} RENAME TO {1}'.format(t.name + tmp_table_suffix, t.name))
+            conn.execute('GRANT ALL privileges ON TABLE {0} to mavenmgr'.format(t.name))
+            conn.execute('GRANT SELECT ON TABLE {0} to mavendb'.format(t.name))
+            conn.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE {0} to mavenpro'.format(t.name))
 
     utilities.logger.info('ending maven in-situ KP file ingester for the directories beneath %s' % sys.argv[1])
 

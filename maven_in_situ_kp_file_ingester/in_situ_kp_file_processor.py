@@ -14,11 +14,9 @@ import pytz
 from datetime import datetime
 from collections import namedtuple
 from logging import getLogger
-from threading import Thread
 from maven_in_situ_kp_file_ingester import config
 from maven_database import models
 from maven_utilities import file_pattern, maven_config
-# from maven_test_utilities.decorators import print_execution_time
 
 ''' Named Tuple to hold data associated with derived in-situ parameters. '''
 DerivedParameterTuple = namedtuple('DerivedParameterTuple', 'name formula units format')
@@ -644,7 +642,6 @@ class insitu_file_processor():
                     connection.execute(models.InSituKeyParametersData.__table__.insert(),
                                        batch)
 
-#     @print_execution_time
     def write_results(self, file_metadata_id, format_data, instrument_data):
         ''' Method used to commit the KP data to the SDC database.
         Arguments:
@@ -701,26 +698,8 @@ class insitu_file_processor():
                          "in_situ_kp_query_parameters_id": format_key
                          })
 
-        num_threads = config.num_threads
-        if num_threads < 2:
-            self.insert_results(core_insert_list)
-            return
-
-        len_core_insert_list = len(core_insert_list)
-        share_size, left_over = divmod(len_core_insert_list, num_threads)
-        divided_insert_list = [core_insert_list[i:i + share_size]
-                               for i in range(0, len_core_insert_list, share_size)]
-
-        if left_over:
-            divided_insert_list[0].extend(divided_insert_list.pop())
-
-        thread_list = [Thread(target=self.insert_results, args=([l]))
-                       for l in divided_insert_list]
-
-        for t in thread_list:
-            t.start()
-        for t in thread_list:
-            t.join()
+        self.insert_results(core_insert_list)
+        return
 
 
 def is_data_line(line):
