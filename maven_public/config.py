@@ -15,6 +15,7 @@ else:
     ppi_data_urls = ["maven.euv.calibrated:data.bands%22",
                      "maven.euv.modelled:data.daily.spectra%22",
                      "maven.euv.modelled:data.minute.spectra%22",
+		     "maven.euv.derived:occultations%22",
                      "maven.lpw.calibrated:data.lp.iv%22",
                      "maven.lpw.calibrated:data.mrg.scpot%22",
                      "maven.lpw.calibrated:data.w.e12%22",
