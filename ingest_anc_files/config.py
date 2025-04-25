@@ -7,7 +7,7 @@ invalid_dir = '/maven/data/sdc/misnamed_files/'
 
 root_destination_directory = '/maven/data/anc/'
 dns_tracking_dest_dir = 'trk'
-dupe_dir_name = 'duplicate_files'
+dupe_dir_name = '/maven/data/sdc/duplicate_files/'
 
 PatternDestinationRule = namedtuple('PatternDestinationRule', ['patterns', 'absolute_directory'])
 
