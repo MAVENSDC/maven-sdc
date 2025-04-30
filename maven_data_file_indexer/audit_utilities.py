@@ -44,10 +44,10 @@ def get_metadata_from_disk(directory):
     '''
     fs_metadata = []
     # find for path_name, file_size, and ctime
-    args = ['/usr/bin/find', directory, '-type', 'f', '-printf', '%p,%s,%T@\n']
+    args = ['/usr/bin/find', directory, '-type', 'f', '-printf', '%p^%s^%T@\n']
     h = subprocess.Popen(args, bufsize=65536, stdout=subprocess.PIPE).stdout
     for l in h:
-        pn, size, ctime = l.decode().split(',')
+        pn, size, ctime = l.decode().split('^')
         f = os.path.basename(pn)
         # keep only files matching one of the regexes
         # TODO Can we get rid of this check?  If something made it to the SDC, it should be index regardless of its pattern
