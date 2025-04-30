@@ -49,6 +49,7 @@ zip_ignore_pattern = re.compile(r'$z')  # don't match anything for now.
 # NOTE - Order matters, precedence is from top to bottom
 IuvsCollectionsMapping = namedtuple('IuvsCollectionsMapping', ['pattern', 'collection'])
 SweaCollectionsMapping = namedtuple('SweaCollectionsMapping', ['pattern', 'collection'])
+LpwDenCollectionsMapping = namedtuple('LpwDenCollectionsMapping', ['pattern', 'collection'])
 iuvs_collections_mapping = [
     IuvsCollectionsMapping(re.compile('.*ech.*'), 'echelle'),
     IuvsCollectionsMapping(re.compile('.*phobos'), 'phobos'),
@@ -65,7 +66,10 @@ swea_collections_mapping = [
     SweaCollectionsMapping(re.compile('.*shape.*'), 'shape'),
     SweaCollectionsMapping(re.compile('.*scpot.*'), 'scpot')
 ]
-
+lpw_den_collections_mapping = [
+    LpwDenCollectionsMapping(re.compile('.*den-orb-high-alt.*'), 'high-alt'),
+    LpwDenCollectionsMapping(re.compile('.*den-orb-low-alt.*'), 'low-alt')
+]
 
 
 def iuvs_loc_generation(m):
@@ -123,6 +127,38 @@ def sweal3_loc_generation(m):
         return None, None
 
     # /<root>/swe/<level>/<collection>/<year>/<month>/
+    return (os.path.join(root_destination_directory,
+                         m.group(file_pattern.general_instrument_group),
+                         m.group(file_pattern.general_level_group),
+                         collection),
+            os.path.join(m.group(file_pattern.general_year_group),
+                         m.group(file_pattern.general_month_group))
+            )
+
+
+def lpwden_loc_generation(m):
+    '''Method used to generate the absolute destination for a general dropbox file that meets the science_pattern regular expression
+    Returns:
+        (root_dir,dynamic_dir)
+
+    where root_dir is expected to reside on the system and dynamic_dir may or may not exist.
+    '''
+
+    assert m is not None
+    collection_type = m.group(file_pattern.general_description_group)
+    collection = None
+    for next_mapping in lpw_den_collections_mapping:
+        m2 = next_mapping.pattern.match(collection_type)
+        if m2 is None:
+            continue
+        collection = next_mapping.collection
+        break
+
+    if collection is None:
+        logger.error('The LPW density collection type %s did not match any known patterns', collection_type)
+        return None, None
+
+    # /<root>/lpw/ql/<collection>/<year>/<month>/
     return (os.path.join(root_destination_directory,
                          m.group(file_pattern.general_instrument_group),
                          m.group(file_pattern.general_level_group),
@@ -666,6 +702,14 @@ file_rules = [
                            record_filename_transform,
                            metadata_duplicate_check,
                            True),
+    PatternDestinationRule(maven_config.science_regex,
+                           [(file_pattern.general_instrument_group, re.compile('lpw')),
+                            (file_pattern.general_level_group, re.compile(r'ql'))],
+                           None,
+                           lpwden_loc_generation,
+                           None,
+                           None,
+                           False),
     PatternDestinationRule(maven_config.science_regex,
                            [(file_pattern.general_instrument_group, re.compile('swe')),
                             (file_pattern.general_level_group, re.compile(r'l3'))],
