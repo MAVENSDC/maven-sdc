@@ -10,7 +10,7 @@ import os
 import sys
 import time
 from sqlalchemy.exc import ProgrammingError
-from sqlalchemy import Index
+from sqlalchemy import Index, text
 from maven_database import database, models
 from maven_utilities.singleton import SingleInstance
 from maven_in_situ_kp_file_ingester import utilities
@@ -111,10 +111,10 @@ def main(arguments):
     with database.engine.connect() as conn:
         for t in insitu_tables:
             # SQLAlchemy doesn't have a builtin means to alter tables
-            conn.execute('ALTER TABLE {0} RENAME TO {1}'.format(t.name + tmp_table_suffix, t.name))
-            conn.execute('GRANT ALL privileges ON TABLE {0} to mavenmgr'.format(t.name))
-            conn.execute('GRANT SELECT ON TABLE {0} to mavendb'.format(t.name))
-            conn.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE {0} to mavenpro'.format(t.name))
+            conn.execute(text('ALTER TABLE {0} RENAME TO {1}'.format(t.name + tmp_table_suffix, t.name)))
+            conn.execute(text('GRANT ALL privileges ON TABLE {0} to mavenmgr'.format(t.name)))
+            conn.execute(text('GRANT SELECT ON TABLE {0} to mavendb'.format(t.name)))
+            conn.execute(text('GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE {0} to mavenpro'.format(t.name)))
 
     utilities.logger.info('ending maven in-situ KP file ingester for the directories beneath %s' % sys.argv[1])
 
