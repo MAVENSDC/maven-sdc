@@ -86,9 +86,6 @@ PROD_LOGGING = {
             'handlers': ['fileFormat_TID'],
             'level': logging.INFO
         },
-        'maven.maven_data_file_indexer.maven_delta_indexer.log': {
-            'level': logging.DEBUG
-        },
         'maven.maven_data_file_indexer.index_worker.log': {
             'handlers': ['fileFormat_TID'],
             'level': logging.DEBUG
@@ -280,10 +277,6 @@ TEST_LOGGING = {
             'handlers': ['db_log'],
             'level': logging.DEBUG,
             'propagate': False
-        },
-        'maven.maven_data_file_indexer.maven_delta_indexer.log': {
-            'handlers': ['console'],
-            'level': logging.DEBUG
         },
         'maven.maven_data_file_indexer.index_worker.log': {
             'handlers': ['console'],
