@@ -5,14 +5,13 @@ import stat
 import shutil
 import hashlib
 import logging
-from pathlib import Path
 from subprocess import Popen, PIPE
 import gzip
 
 import maven_database
 from maven_database.models import MavenDropboxMgrMove
 from maven_data_file_indexer.maven_file_indexer import upsert_fs_metadata
-from maven_data_file_indexer.audit_utilities import get_metadata_from_disk, FSMetadata
+from maven_data_file_indexer.audit_utilities import get_metadata_from_disk
 from . import config
 from maven_utilities import file_pattern, time_utilities
 from maven_utilities.utilities import file_is_old_enough, is_compressed_format

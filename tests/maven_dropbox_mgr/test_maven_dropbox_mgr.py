@@ -336,7 +336,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
             self.assertTrue(os.path.isfile(dest_fn))
             # test that the metadata for the file is in the database
             self.assertEqual(ScienceFilesMetadata.query.filter(ScienceFilesMetadata.instrument.startswith('kp')).count(), 1)
-            # self.assertEqual(ScienceFilesMetadata.query.filter(ScienceFilesMetadata.instrument.startswith('kp')).count())
             after_db_count = MavenDropboxMgrMove.query.count()
             self.assertEqual(after_db_count, before_db_count + 1)
             m = MavenDropboxMgrMove.query.first()
