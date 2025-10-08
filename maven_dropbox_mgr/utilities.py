@@ -1,4 +1,5 @@
 # pylint: disable=W0603
+from datetime import datetime
 import os
 import stat
 import shutil
@@ -9,6 +10,8 @@ import gzip
 
 import maven_database
 from maven_database.models import MavenDropboxMgrMove
+from maven_data_file_indexer.maven_file_indexer import upsert_fs_metadata
+from maven_data_file_indexer.audit_utilities import get_metadata_from_disk
 from . import config
 from maven_utilities import file_pattern, time_utilities
 from maven_utilities.utilities import file_is_old_enough, is_compressed_format
@@ -145,6 +148,9 @@ def move_valid_dropbox_file(src_filename,
             with_world_readable_mode = mode | stat.S_IROTH
             os.chmod(dest_filename, with_world_readable_mode)
             log_move_in_db(src_filename, dest_filename)
+            # Add file metadata to the metadata database
+            file_metadata = get_metadata_from_disk(dest_filename)
+            upsert_fs_metadata(file_metadata, None)
             return duplicate_action_taken
 
     raise RuntimeError("Unable to move valid file %s.  No rule matched the base filename %s" % (src_filename, bn))

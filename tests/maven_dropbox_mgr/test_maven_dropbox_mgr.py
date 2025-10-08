@@ -9,7 +9,7 @@ from maven_utilities import constants, anc_config
 os.environ[constants.python_env] = 'testing'
 from maven_dropbox_mgr import utilities, config
 from maven_utilities import time_utilities, constants
-from maven_database.models import MavenDropboxMgrMove, MavenLog
+from maven_database.models import MavenDropboxMgrMove, MavenLog, ScienceFilesMetadata
 from mock import Mock
 from tests.maven_test_utilities.file_system import get_temp_root_dir
 from tests.maven_test_utilities.db_utils import delete_data
@@ -319,6 +319,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         utcnow = time_utilities.utc_now().replace(tzinfo=None)  # sqlite can't store timezone info
 
         try:
+            self.assertEqual(ScienceFilesMetadata.query.filter(ScienceFilesMetadata.instrument.startswith('kp')).count(), 0)
             bn = 'mvn_kp_insitu_20141231_v01_r01.tab'
             dest_fn = self.get_abs_filename(bn, True)
             src_fn = os.path.join(self.root_source_directory, bn)
@@ -333,6 +334,8 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
             self.assertFalse(os.path.exists(src_fn))
             # and appeared in the destination directory
             self.assertTrue(os.path.isfile(dest_fn))
+            # test that the metadata for the file is in the database
+            self.assertEqual(ScienceFilesMetadata.query.filter(ScienceFilesMetadata.instrument.startswith('kp')).count(), 1)
             after_db_count = MavenDropboxMgrMove.query.count()
             self.assertEqual(after_db_count, before_db_count + 1)
             m = MavenDropboxMgrMove.query.first()
