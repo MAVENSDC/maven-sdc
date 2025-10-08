@@ -37,6 +37,8 @@ def upsert_fs_metadata(fs_data, handle_exception=None):
                                          bn):
 
             sci_metadata.append(utilities.get_metadata_for_science_file(_next.path_name))
+            console_logger.info(f"Added file {_next.path_name} to science metadata to "
+                                f"be processed")
         elif file_pattern.matches_on_group([maven_config.l0_regex],
                                            bn):
             l0_metadata.append(utilities.get_metadata_for_l0_file(_next.path_name))
