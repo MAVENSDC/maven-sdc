@@ -11,6 +11,7 @@ import logging
 from datetime import datetime, timedelta
 import pytz
 
+from maven_data_file_indexer.maven_file_indexer import console_logger
 from maven_utilities import time_utilities, anc_config, maven_config, file_pattern, utilities as util_utilities
 from maven_database.database import db_session
 from maven_database.models import ScienceFilesMetadata, AncillaryFilesMetadata
@@ -596,6 +597,7 @@ def insert_science_file_metadatum(metadata):
                              data_type=metadata.data_type)
     db_session.add(m)
     db_session.commit()
+    console_logger.info(f"Added {metadata.file_name} to the metadata database")
 
 
 def upsert_science_file_metadatum(metadata):
@@ -631,6 +633,7 @@ def upsert_science_file_metadatum(metadata):
         m.id = sfm_id[0]
         db_session.merge(m)
         db_session.commit()
+        console_logger.info(f"Updated {metadata.file_name} in the metadata database")
 
 
 def insert_science_file_metadata(metadata_list):
