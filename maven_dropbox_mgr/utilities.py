@@ -151,7 +151,6 @@ def move_valid_dropbox_file(src_filename,
             # Add file metadata to the metadata database
             file_metadata = get_metadata_from_disk(dest_filename)
             upsert_fs_metadata(file_metadata, None)
-            maven_database.db_session.commit()
             return duplicate_action_taken
 
     raise RuntimeError("Unable to move valid file %s.  No rule matched the base filename %s" % (src_filename, bn))
