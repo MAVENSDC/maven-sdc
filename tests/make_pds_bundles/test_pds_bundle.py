@@ -63,15 +63,14 @@ class TestPdsBundles(unittest.TestCase):
                           'mvn_swi_l2_finesvy3d_20140319.xml',
                           'mvn_swi_l2_onboardsvymom_20140319_v01_r03.cdf'
                           ]
-    new_metadata_names_dict = {'mvn_ngi_l1b_collection_inventory_20141201T135601.xml': 'collection_ngims_l1b_inventory.xml',
-                               'mvn_ngi_l1b_collection_inventory_20141201T135601.csv': 'collection_ngims_l1b_inventory.csv',
-                               'mvn_ngi_document_collection_20141201T135601.xml': 'collection_ngims_document.xml',
-                               'mvn_ngi_document_collection_20141201T135601.csv': 'collection_ngims_document.csv',
-                               'mvn_ngi_xml_collection_schema_20141201T135601.xml': 'collection_ngims_xml_schema.xml',
-                               'mvn_ngi_xml_collection_schema_20141201T135601.tab': 'collection_ngims_xml_schema.tab',
-                               'mvn_ngi_pds_sis_20141201T135601.xml': 'ngims_pds_sis.xml',
-                               'mvn_ngi_pds_sis_20141201T135601.pdf': 'ngims_pds_sis.pdf'
-                               }
+    metadata_files = ['collection_ngims_l1b_inventory.xml',
+                      'collection_ngims_l1b_inventory.csv',
+                      'collection_ngims_document.xml',
+                      'collection_ngims_document.csv',
+                      'collection_ngims_xml_schema.xml',
+                      'collection_ngims_xml_schema.tab',
+                      'ngims_pds_sis.xml',
+                      'ngims_pds_sis.pdf']
     test_success_compressed_files = ['mvn_swi_l2_onboardsvymom_20140319.xml.gz']
     test_miss_files = [
         'mvn_euv_l0_bands_20141018_v00_r00.cdf',  # l0
@@ -95,21 +94,11 @@ class TestPdsBundles(unittest.TestCase):
                                                                    self.test_success_compressed_files,
                                                                    self.test_root_maven)
 
-        self.metadata_for_metadata_files = test_utilities.get_metadata_metadata(self.new_metadata_names_dict.keys(),
-                                                                                self.test_root_maven)
-
         # Put into database
         test_utilities.populate_science_metadata(next_data[0] for next_data in self.metadata_for_test_files)
-        test_utilities.populate_science_metadata(next_data[0] for next_data in self.metadata_for_metadata_files)
 
         file_system.build_test_files_and_structure('some test data', self.test_root, [f[1] for f in self.metadata_for_test_files])
-        file_system.build_test_files_and_structure('some test data', self.test_root, [f[1] for f in self.metadata_for_metadata_files])
-
-        with open(constants.filename_transforms_location, 'a') as ofile:
-            writer = csv.writer(ofile)
-            for new_name, old_name in self.new_metadata_names_dict.items():
-                writer.writerow([new_name, old_name])
-            ofile.close()
+        file_system.build_test_files_and_structure('some test data', self.test_root, self.metadata_files)
 
         for next_file in [f[1] for f in self.metadata_for_test_files if os.path.basename(f[1]) in self.test_success_compressed_files]:
             with gzip.open(next_file, 'wb') as gz:

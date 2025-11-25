@@ -11,8 +11,6 @@ import pytz
 python_env = 'MAVEN_PYTHON_ENV'
 MAVEN_DB_TABLE_SUFFIX = 'MAVEN_DB_TABLE_SUFFIX'
 
-filename_transforms_location = '/tmp/filename_transforms.csv' if os.environ.get(python_env) == 'testing' else '/maven/mavenpro/filename_transforms.csv'
-
 # Filemagic Identification
 magic_gzip_type = 'application/x-gzip'
 magic_id_byte_size = 4

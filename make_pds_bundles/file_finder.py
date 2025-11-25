@@ -53,13 +53,7 @@ class InventoryFileFinder():
     
 
     def __init__(self,
-                 instrument_list=None,
-                 grouping_list=None,
-                 plan_list=None,
-                 level_list=None,
-                 extension_list=None,
-                 description_list=None,
-                 file_name=None,
+                 inv_file,
                  results_from_dt=datetime.datetime.min,
                  results_to_dt=datetime.datetime.max,
                  results_extensions=None,
@@ -70,13 +64,7 @@ class InventoryFileFinder():
                  uprev_inv_file=False):
         '''Constructor
         Arguments:
-            instrument_list : Instrument filters
-            grouping_list : Group filters
-            plan_list : Plan filters
-            level_list : Level filters
-            extension_list : File extension filters
-            description_list : Descriptor filters, accepts wildcards (%)
-            file_name : File name filter, accepts wildcards (%)
+            inv_file : The inventory file to use
             results_from_dt : Timetag start filter
             results_to_dt: Timetag end filter
             results_extension : Inventory files extension filter (only applied to files found in the inventory)
@@ -86,17 +74,7 @@ class InventoryFileFinder():
             uprev_inv_file : If true, increment the revision of the files found in the inventory by 1
         '''
 
-        inv_files_query = utilities.query_for_science_files(instrument_list=instrument_list,
-                                                            grouping_list=grouping_list,
-                                                            plan_list=plan_list,
-                                                            level_list=level_list,
-                                                            extension_list=extension_list,
-                                                            description_list=description_list,
-                                                            file_name=file_name,
-                                                            stream_results=True,
-                                                            latest=True
-                                                            )
-        self.inv_files = list(inv_files_query)
+        self.inv_file = inv_file
         self.uprev_inv_file = uprev_inv_file
         self.results_version = results_version
         self.results_revision = results_revision
@@ -168,93 +146,89 @@ class InventoryFileFinder():
             return _cmp((sfmd_base_name, (sfmd.version, sfmd.revision)),
                        (inv_tuple[0], inv_ver_rev))
 
-        for next_inv_metadata in self.inv_files:
+        logger.info("Processing inventory file :%s", self.inv_file)
 
-            file_path = os.path.join(next_inv_metadata.directory_path, next_inv_metadata.file_name)
+        if not os.path.isfile(self.inv_file):
+            err_msg = "{0} wasn't found on the file system!".format(self.inv_file)
+            logger.error(err_msg)
+            return
 
-            logger.info("Processing inventory file :%s", file_path)
+        inv_entries = []
+        # ingest inventory file into
+        with open(self.inv_file, 'r') as inv_file:
 
-            if not os.path.isfile(file_path):
-                err_msg = "{0} wasn't found on the file system!".format(file_path)
-                logger.error(err_msg)
-                raise Exception(err_msg)
+            while True:
+                next_inv_line = inv_file.readline()
 
-            inv_entries = []
-            # ingest inventory file into
-            with open(file_path, 'r') as inv_file:
+                if not next_inv_line:
+                    break
 
-                while True:
-                    next_inv_line = inv_file.readline()
+                try:
+                    next_inv = parse_inventory_line(next_inv_line)
+                except ValueError:
+                    logger.warning("The line [%s] doesn't appear to be an inventory entry.  Skipping inventory file :%s ", next_inv_line, self.inv_file)
+                    continue
 
-                    if not next_inv_line:
-                        break
+                base_name, version, revision, start_date = next_inv
 
-                    try:
-                        next_inv = parse_inventory_line(next_inv_line)
-                    except ValueError:
-                        logger.warning("The line [%s] doesn't appear to be an inventory entry.  Skipping inventory file :%s ", next_inv_line, file_path)
-                        continue
+                inv_entries.append((base_name, (version, revision), start_date))
+        inv_entries.sort()
+        if len(inv_entries) == 0:
+            logger.warning('No inventory entries found')
+            return
+        # query db to find file existence/location
+        query = ScienceFilesMetadata.query.filter(operator.ge(ScienceFilesMetadata.file_root, inv_entries[0][0]))
 
-                    base_name, version, revision, start_date = next_inv
+        query = query.filter(operator.le(ScienceFilesMetadata.file_root, inv_entries[-1][0] + 'Z'))  # the Z is a bit of a hack to find the last entry (db file_root has .<ext>)
+        ext_filter = []
+        for ext in self.results_extensions:
+            ext_filter.append(operator.eq(ScienceFilesMetadata.file_extension, ext))
+        query = query.filter(or_(*ext_filter))
+        not_ext_filter = []
+        for ext in self.results_not_extenstions:
+            not_ext_filter.append(operator.ne(ScienceFilesMetadata.file_extension, ext))
+        query = query.filter(or_(*not_ext_filter))
+        if self.results_version:
+            query = query.filter(ScienceFilesMetadata.version == self.results_version)
+        query = query.filter(ScienceFilesMetadata.timetag >= self.from_dt,
+                                ScienceFilesMetadata.timetag < self.to_dt)
+        # order by families alphabetically descending version/revision
+        query = query.order_by(ScienceFilesMetadata.file_root, ScienceFilesMetadata.absolute_version)
+        next_inv_entry = inv_entries.pop(0)
 
-                    inv_entries.append((base_name, (version, revision), start_date))
-            inv_entries.sort()
-            if len(inv_entries) == 0:
-                logger.warning('No inventory entries found')
-                return
-            # query db to find file existence/location
-            query = ScienceFilesMetadata.query.filter(operator.ge(ScienceFilesMetadata.file_root, inv_entries[0][0]))
+        missing_inv = []
+        
+        # Verify that there is at least one result in the query, otherwise we won't enter the loop below (and therefore no errors will pop up).   
+        test_query = query.first()
+        if not test_query:
+            logger.warning("There were no files on the SDC that matched this data type and time range!  Make sure that files were actually delivered.")
 
-            query = query.filter(operator.le(ScienceFilesMetadata.file_root, inv_entries[-1][0] + 'Z'))  # the Z is a bit of a hack to find the last entry (db file_root has .<ext>)
-            ext_filter = []
-            for ext in self.results_extensions:
-                ext_filter.append(operator.eq(ScienceFilesMetadata.file_extension, ext))
-            query = query.filter(or_(*ext_filter))
-            not_ext_filter = []
-            for ext in self.results_not_extenstions:
-                not_ext_filter.append(operator.ne(ScienceFilesMetadata.file_extension, ext))
-            query = query.filter(or_(*not_ext_filter))
-            if self.results_version:
-                query = query.filter(ScienceFilesMetadata.version == self.results_version)
-            query = query.filter(ScienceFilesMetadata.timetag >= self.from_dt,
-                                 ScienceFilesMetadata.timetag < self.to_dt)
-            # order by families alphabetically descending version/revision
-            query = query.order_by(ScienceFilesMetadata.file_root, ScienceFilesMetadata.absolute_version)
-            next_inv_entry = inv_entries.pop(0)
+        try:
+            for next_sfmd in query.yield_per(20):
+                if compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) < 0:  # DB is behind inventory
+                    continue  # process next sfmd
 
-            missing_inv = []
+                while compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) > 0:  # DB is ahead of inventory
+                    if next_inv_entry[2] > self.from_dt and next_inv_entry[2] < self.to_dt: # Determine if file is in the time range we're looking for
+                        logger.warning("The inventory entry %s wasn't found in the SDC!", next_inv_entry[0])
+                        missing_inv.append((next_inv_entry))
+                    next_inv_entry = inv_entries.pop(0)
+
+                if compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) == 0:
+                    yield os.path.join(next_sfmd.directory_path, next_sfmd.file_name)
+                    next_inv_entry = inv_entries.pop(0)
+            query.session.commit()
+
+            # gather remaining inv entries
+            for _next in inv_entries:
+                missing_inv.append(_next)
             
-            # Verify that there is at least one result in the query, otherwise we won't enter the loop below (and therefore no errors will pop up).   
-            test_query = query.first()
-            if not test_query:
-                logger.warning("There were no files on the SDC that matched this data type and time range!  Make sure that files were actually delivered.")
 
-            try:
-                for next_sfmd in query.yield_per(20):
-                    if compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) < 0:  # DB is behind inventory
-                        continue  # process next sfmd
-
-                    while compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) > 0:  # DB is ahead of inventory
-                        if next_inv_entry[2] > self.from_dt and next_inv_entry[2] < self.to_dt: # Determine if file is in the time range we're looking for
-                            logger.warning("The inventory entry %s wasn't found in the SDC!", next_inv_entry[0])
-                            missing_inv.append((next_inv_entry))
-                        next_inv_entry = inv_entries.pop(0)
-
-                    if compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) == 0:
-                        yield os.path.join(next_sfmd.directory_path, next_sfmd.file_name)
-                        next_inv_entry = inv_entries.pop(0)
-                query.session.commit()
-
-                # gather remaining inv entries
-                for _next in inv_entries:
-                    missing_inv.append(_next)
-                
-
-            except IndexError:  # reached end of next_inv_entry list
-                pass
-            finally:
-                for _next in missing_inv:
-                    self.missing_file_handler(_next)
+        except IndexError:  # reached end of next_inv_entry list
+            pass
+        finally:
+            for _next in missing_inv:
+                self.missing_file_handler(_next)
 
 
 

@@ -150,22 +150,6 @@ def get_md5_checksums(files):
     return checksum
 
 
-def get_filename_transforms():
-    '''Method used to read in /maven/mavenpro/filename_transforms.csv
-    Arguments:
-        Root directory string
-    Returns:
-        A dictionary of the csv file
-    '''
-
-    ifile = open(constants.filename_transforms_location, 'r')
-    reader = csv.reader(ifile)
-    transdict = {}
-    for row in reader:
-        transdict[row[0]] = row[1]
-    return transdict
-
-
 def get_instrument_filters(instrument, override_inst_config):
     override_config = imp.load_source("override_config", override_inst_config) if override_inst_config else None
     if override_config is not None and (
@@ -207,9 +191,8 @@ def tar_bundle_files(target_dir,
     lidvid_files = [os.path.splitext(os.path.basename(value[1]))[0] for value in lidvids]
     # progress.add_handler(StatusProgressHandler(component=MAVEN_SDC_COMPONENT.PDS_ARCHIVER),
     #                     .25)
-    transform_dict = get_filename_transforms()
 
-    #
+    
     # Loop through the files in the bundle
     if not dry_run:
         with tarfile.open(tarfile_name, 'w:gz') as tar_file:
@@ -229,13 +212,11 @@ def tar_bundle_files(target_dir,
                             # Create unzipped file
                             tmp_filename = os.path.splitext(file_to_tar)[0]
                             # logger.info('Adding %s to tar', tmp_filename)
-                            archive_name = transform_dict[base_file] if base_file in transform_dict else tmp_filename
                             with open(tmp_filename, 'wb') as tmp_file:
                                 tmp_file.write(gzip.read())
                                 # Add unzipped file
-                            tar_file.add(tmp_filename,
-                                         arcname=archive_name)
-                            checksums.append(ChecksumData(get_md5_checksums([tmp_filename])[0], archive_name))
+                            tar_file.add(tmp_filename)
+                            checksums.append(ChecksumData(get_md5_checksums([tmp_filename])[0], tmp_filename))
                             # Remove unzipped tar from file system
                             os.remove(tmp_filename)
                             # logger.info('Done adding %s to tar as %s', file_to_tar, tmp_filename)
@@ -246,11 +227,9 @@ def tar_bundle_files(target_dir,
                 else:
                     try:
                         # logger.info('Adding %s to tar', file_to_tar)
-                        archive_name = transform_dict[base_file] if base_file in transform_dict else file_to_tar
                         tar_file.add(file_to_tar,
-                                     recursive=False,
-                                     arcname=archive_name)
-                        checksums.append(ChecksumData(get_md5_checksums([file_to_tar])[0], archive_name))
+                                     recursive=False)
+                        checksums.append(ChecksumData(get_md5_checksums([file_to_tar])[0], file_to_tar))
                         # logger.info('Done adding %s to tar', file_to_tar)
                         # progress.complete_unit(file_to_tar)
                     except IOError as e:
@@ -617,15 +596,35 @@ def run_archive(start, end, instruments, root_dir, dry_run, user_notes=None, ove
                                             checksum_file,
                                             current_file_version,
                                             dry_run)
+            elif 'metadata' in next_instrument_filters.plans:
+                metadata_path = os.path.join(root_dir, f'maven/data/sci/{next_instrument_filters.instrument}/metadata')
+                bundle_files=[]
+                if os.path.isdir(metadata_path):
+                    bundle_files = [os.path.join(os.path.abspath(metadata_path), f) for f in os.listdir(metadata_path)]
+
+                archive_directory = os.path.join(root_dir, 'maven/data/arc', instrument_dir)
+                current_file_version = get_latest_version(archive_directory) + 1
+                bundle_file, checksum_file, manifest_file = generate_bundle_file_names(next_instrument, start, end,
+                                                                                       current_file_version)
+                instrument_lidvids = []
+                print_transfer_manifest(instrument_lidvids,
+                                        archive_directory,
+                                        manifest_file)
+
+                checksums = tar_bundle_files(archive_directory,
+                                             bundle_files,
+                                             instrument_lidvids,
+                                             bundle_file,
+                                             dry_run,
+                                             progress,
+                                             skip_no_label_files)
+
+                print_checksum_manifest(archive_directory,
+                                        checksums,
+                                        checksum_file)
             else:
 
-                file_generator = file_finder.InventoryFileFinder(instrument_list=[next_instrument_filters.instrument],
-                                                                 plan_list=next_instrument_filters.plans,
-                                                                 grouping_list=next_instrument_filters.groups,
-                                                                 level_list=next_instrument_filters.levels,
-                                                                 extension_list=next_instrument_filters.exts,
-                                                                 description_list=next_instrument_filters.descs,
-                                                                 file_name=next_instrument_filters.file_name,
+                file_generator = file_finder.InventoryFileFinder(next_instrument_filters.as_inv_file,
                                                                  results_from_dt=start,
                                                                  results_to_dt=end,
                                                                  results_not_extensions=['xml'],
@@ -645,12 +644,7 @@ def run_archive(start, end, instruments, root_dir, dry_run, user_notes=None, ove
                 bundle_files = list(file_generator.generate())
 
                 label_file_generator = file_finder.InventoryFileFinder(
-                    instrument_list=[next_instrument_filters.instrument],
-                    plan_list=next_instrument_filters.plans,
-                    grouping_list=next_instrument_filters.groups,
-                    level_list=next_instrument_filters.levels,
-                    extension_list=next_instrument_filters.exts,
-                    description_list=next_instrument_filters.descs,
+                    next_instrument_filters.as_inv_file,
                     results_from_dt=start,
                     results_to_dt=end,
                     results_version=next_instrument_filters.label_ver,

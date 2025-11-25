@@ -76,7 +76,6 @@ def is_science_metadata(fullpath):
     bn = os.path.basename(fullpath)
     parts = file_pattern.extract_parts([maven_config.l0_regex,
                                         maven_config.ql_regex,
-                                        maven_config.metadata_index_regex,
                                         maven_config.science_regex,
                                         maven_config.kp_regex,
                                         maven_config.sep_anc_regex,
@@ -202,75 +201,6 @@ def get_metadata_for_ql_file(fullpath):
                           level=level,
                           descriptor=orbit_group,
                           timetag=dt,
-                          absolute_version=abs_version,
-                          version=version,
-                          revision=revision,
-                          file_extension=extension,
-                          plan=plan,
-                          mod_date=util_utilities.get_mtime(fullpath),
-                          orbit=None,
-                          mode=None,
-                          data_type=None,
-                          flare_class=None)
-
-
-def generate_metadata_for_metadata_file(fullpath_list):
-    for f in fullpath_list:
-        next_result = get_metadata_for_metadata_file(f)
-        if next_result:
-            yield next_result
-
-
-def get_metadata_for_metadata_file(fullpath):
-    '''Returns the metadata embedded in the metadata files.
-
-    Argument
-        fullpath_list - A list of full paths of metadata files.
-    '''
-    directory, bn = os.path.split(fullpath)
-    _, parent = os.path.split(directory)
-
-    parts = file_pattern.extract_parts([maven_config.metadata_index_regex],
-                                       bn,
-                                       [file_pattern.general_instrument_group,
-                                        file_pattern.general_level_group,
-                                        maven_config.meta_type_group,
-                                        maven_config.meta_description,
-                                        file_pattern.general_year_group,
-                                        file_pattern.general_month_group,
-                                        file_pattern.general_day_group,
-                                        file_pattern.general_hhmmss_group,
-                                        file_pattern.general_version_group,
-                                        file_pattern.general_revision_group,
-                                        file_pattern.general_extension_group,
-                                        file_pattern.general_gz_extension_group],
-                                       file_pattern.time_transforms)
-    if parts is None:  # No matches
-        return None
-    instrument, level, _, description, year, month, day, (hh, mm, ss), ver, rev, extension, _ = parts.values()
-    file_size = os.path.getsize(fullpath)
-    try:
-        # extract time info
-        dt = datetime(year, month, day, hh, mm, ss)
-        dt_utc = time_utilities.to_utc_tz(dt)
-    except Exception:
-        logger.exception('Unable to determine datetime of file %s.  Parent directory was %s.  File will not be indexed', fullpath, parent)
-        return None
-
-    # defaulted until this info is provided
-    version = 1 if ver is None else int(ver)
-    revision = 0 if rev is None else int(rev)
-    abs_version = (dt_utc - abs_version_epoch_dt).total_seconds()
-    plan = 'metadata'
-
-    return ScFileMetadata(directory_path=directory,
-                          file_name=bn,
-                          file_root=bn,
-                          file_size=file_size,
-                          instrument=instrument,
-                          level=level,
-                          descriptor=description,
-                          timetag=dt_utc,
                           absolute_version=abs_version,
                           version=version,
                           revision=revision,
