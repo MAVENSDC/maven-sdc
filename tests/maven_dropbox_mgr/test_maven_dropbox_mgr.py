@@ -41,8 +41,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
             self.root_source_directory, config.dupe_dir_name)
         maven_log.config_logging()
 
-        constants.filename_transforms_location = os.path.join(
-            self.test_root, 'mavenpro', 'filename_transforms.csv')
         os.mkdir(os.path.join(self.test_root, 'mavenpro'))
         
         os.mkdir(self.dupe_dir)
@@ -60,7 +58,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         '''Method used to create the dropbox destination directory if that directory doesn't exist'''
         abs_filename = None
 
-        for next_pattern, groups_to_check, _, rename_rule, _, _, _ in config.file_rules:
+        for next_pattern, groups_to_check, rename_rule, _, _ in config.file_rules:
             m = file_pattern.matches_on_group(
                 [next_pattern], dropbox_file_name, groups_to_check)
             if m is not None:
@@ -789,8 +787,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         os.makedirs(dest_dir)
         assert os.path.isdir(dest_dir)
         bn = 'collection_ngims_context.csv'
-        transformed_name = config.metadata_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -801,7 +797,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
                                           self.dupe_dir)
         # it disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         # and appeared in the destination directory
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
@@ -820,8 +816,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         os.makedirs(dest_dir)
         assert os.path.isdir(dest_dir)
         bn = 'ngims_tid_caveats_v01_r02.pdf'
-        transformed_name = config.caveats_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_caveats_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -832,7 +826,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
                                           self.dupe_dir)
         # it disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         # and appeared in the destination directory
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
@@ -851,8 +845,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         os.makedirs(dest_dir)
         assert os.path.isdir(dest_dir)
         bn = 'ngims_pds_sis.pdf'
-        transformed_name = config.sis_filename_transform(
-            file_pattern.matches_on_group([maven_config.sis_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -863,7 +855,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
                                           self.dupe_dir)
         # it disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         # and appeared in the destination directory
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
@@ -882,9 +874,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         os.makedirs(dest_dir)
         assert os.path.isdir(dest_dir)
         bn = 'ngims_readme.txt'
-        transformed_name = config.readme_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_readme_regex], bn))
-        self.assertTrue(maven_config.metadata_index_regex.match(transformed_name))
+        self.assertTrue(maven_config.metadata_readme_regex.match(bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -895,7 +885,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
                                           self.dupe_dir)
         # it disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         # and appeared in the destination directory
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
@@ -914,9 +904,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         os.makedirs(dest_dir)
         assert os.path.isdir(dest_dir)
         bn = 'ngims_product_version_changes_v01_r02.pdf'
-        transformed_name = config.version_changes_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_version_changes_regex], bn))
-        self.assertTrue(maven_config.metadata_index_regex.match(transformed_name))
+        self.assertTrue(maven_config.metadata_version_changes_regex.match(bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -927,7 +915,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
                                           self.dupe_dir)
         # it disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         # and appeared in the destination directory
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
@@ -946,8 +934,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         os.makedirs(dest_dir)
         assert os.path.isdir(dest_dir)
         bn = 'collection_ngi_context_with_description.csv'
-        transformed_name = config.metadata_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -958,7 +944,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
                                           self.dupe_dir)
         # it disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         # and appeared in the destination directory
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
@@ -969,83 +955,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         self.assertEqual(m.md5, hashlib.md5(open(dest_fn).read().encode()).hexdigest())
         self.assertEqual(m.file_size, os.path.getsize(dest_fn))
 
-    def test_transformed_name_is_metadata_indexed(self):
-        '''Test to ensure the various transformed names meet the metadata_index_pattern regex'''
-
-        # Collection/Bundle Metadata Files
-        self.assertIsNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], 'bundle_maven_ngims.xml'))
-        transformed_name = config.metadata_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_regex], 'bundle_maven_ngims.xml'))  # no level given
-        self.assertIn('nolevel', transformed_name)  # default level: mvn_ngi_nolevel_bundle_20171129T183400.xml vs. mvn_ngi__bundle_20171129T183549.xml
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name), transformed_name)
-
-        # level given below, does not default        
-        transformed_name = config.metadata_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_regex], 'collection_maven_iuv_processed_schema.xml'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        transformed_name = config.metadata_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_regex], 'bundle_maven_iuv_processed.xml'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        transformed_name = config.metadata_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_regex], 'collection_ngi_context.csv'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        transformed_name = config.metadata_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_regex], 'collection_maven_iuvs_raw_calibration_inventory.tab'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        
-        # SIS Metadata Files
-        transformed_name = config.sis_filename_transform(
-            file_pattern.matches_on_group([maven_config.sis_regex], 'ngims_pds_sis.pdf'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-
-        # Caveat Metadata Files
-        transformed_name = config.caveats_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_caveats_regex], 'ngims_tid_caveats_v01_r02.pdf'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        transformed_name = config.caveats_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_caveats_regex], 'ngims_tid_caveats_v01_r02.xml'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        transformed_name = config.caveats_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_caveats_regex], 'ngims_tid_caveats.pdf'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-
-        # Readme Metadata Files
-        transformed_name = config.readme_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_readme_regex], 'iuvs_data_readme.txt'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-        transformed_name = config.readme_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_readme_regex], 'ngims_readme.txt'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-
-        # Product Version Metadata Files
-        transformed_name = config.version_changes_filename_transform(file_pattern.matches_on_group(
-            [maven_config.metadata_version_changes_regex], 'ngims_product_version_changes_v01_r02.pdf'))
-        self.assertNotIn('nolevel', transformed_name)
-        self.assertIsNotNone(file_pattern.matches_on_group(
-            [maven_config.metadata_index_regex], transformed_name))
-
     def test_metadata_duplicates(self):
         expected_dest_dir = os.path.join(
             config.root_destination_directory, 'iuv', config.metadata_dir_name)
@@ -1055,40 +964,14 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         
         # Create a file in the "dropbox"
         bn = 'collection_maven_iuvs_calibrated_limb_inventory.tab'
-        transformed_name = config.metadata_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
         
         # Create the file that is the same as bn
-        dest_bn_1 = 'mvn_iuv_calibrated_collection_limb-inventory_20160404T000000.tab'
+        dest_bn_1 = bn
         dest_fn_1 = os.path.join(expected_dest_dir, dest_bn_1)
         with open(dest_fn_1, 'w') as f:
-            f.write('just something to fill the file')
-        
-        # Create a file that is not the same as bn
-        dest_bn_2 = 'mvn_iuv_calibrated_collection_limb-inventory_20150404T000000.tab'
-        dest_fn_2 = os.path.join(expected_dest_dir, dest_bn_2)
-        with open(dest_fn_2, 'w') as f:
-            f.write('just something ELSE to fill the file')
-            
-        # Create an unrelated file to sit in the directory with a matching checksum
-        dest_bn_3 = 'mvn_iuv_pds_sis_20151223T174401.pdf'
-        dest_fn_3 = os.path.join(expected_dest_dir, dest_bn_3)
-        with open(dest_fn_3, 'w') as f:
-            f.write('just something to fill the file')
-        
-        # Create a non science file in the directory
-        dest_bn_4 = 'maven-not-a-real-file.txt'
-        dest_fn_4 = os.path.join(expected_dest_dir, dest_bn_4)
-        with open(dest_fn_4, 'w') as f:
-            f.write('just here to make sure nothing breaks')
-        
-        # Create another older file in the directory that is the same as bn
-        dest_bn_5 = 'mvn_iuv_calibrated_collection_limb-inventory_20140404T000000.tab'
-        dest_fn_5 = os.path.join(expected_dest_dir, dest_bn_5)
-        with open(dest_fn_5, 'w') as f:
             f.write('just something to fill the file')
         
         # Attempt to move the file
@@ -1100,21 +983,14 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         # Check that src_fn disappeared from the source directory
         self.assertFalse(os.path.exists(src_fn))
         
-        # Check that the dest_bn files still exist
+        # Check that the dest_bn files exists
         self.assertTrue(os.path.exists((dest_fn_1)))
-        self.assertTrue(os.path.exists((dest_fn_2)))
-        self.assertTrue(os.path.exists((dest_fn_3)))
-        self.assertTrue(os.path.exists((dest_fn_3)))
-        self.assertTrue(os.path.exists((dest_fn_4)))
-        self.assertTrue(os.path.exists((dest_fn_5)))
         
-        # Check that src_fn was NOT moved to the destination directory
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
-        self.assertFalse(os.path.isfile(dest_fn))
+        # Check that a dropbox move was successfully performed
         after_db_count = MavenDropboxMgrMove.query.count()
-        self.assertEqual(after_db_count, before_db_count)
+        self.assertGreater(after_db_count, before_db_count)
 
-    def test_metadata_non_duplicates(self):
+    def test_metadata_newer_file(self):
         expected_dest_dir = os.path.join(
             config.root_destination_directory, 'iuv', config.metadata_dir_name)
         dest_dir = os.path.join(config.root_destination_directory, 'iuv')
@@ -1122,43 +998,34 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         assert os.path.isdir(dest_dir)
         
         bn = 'collection_maven_iuvs_calibrated_limb_inventory.tab'
-        transformed_name = config.metadata_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
-            f.write('just something to fill the file')
+            f.write('just something newer to fill the file')
 
         # Create a file that is different from bn
         # Should remain because basename differs
-        dest_bn_1 = 'mvn_iuv_calibrated_collection_limb-inventory1_20160404T000000.tab'
+        dest_bn_1 = 'collection_maven_iuvs_calibrated_limb_inventory1.tab'
         dest_fn_1 = os.path.join(expected_dest_dir, dest_bn_1)
         with open(dest_fn_1, 'w') as f:
             f.write('just something different to fill the file')
-        
-        # Create another file that is different from bn
-        # Should be updated (effectively removed, because timetag is updated to now)
-        dest_bn_2 = 'mvn_iuv_calibrated_collection_limb-inventory_20150404T000000.tab'
-        dest_fn_2 = os.path.join(expected_dest_dir, dest_bn_2)
-        with open(dest_fn_2, 'w') as f:
-            f.write('just something else to fill the file')
 
         # Create an unrelated file to sit in the directory with a matching checksum
-        dest_bn_3 = 'mvn_iuv_pds_sis_20151223T174401.pdf'
-        dest_fn_3 = os.path.join(expected_dest_dir, dest_bn_3)
-        with open(dest_fn_3, 'w') as f:
-            f.write('just something to fill the file')
+        dest_bn_2 = 'mvn_iuv_pds_sis_20151223T174401.pdf'
+        dest_fn_2 = os.path.join(expected_dest_dir, dest_bn_2)
+        with open(dest_fn_2, 'w') as f:
+            f.write('just something newer to fill the file')
             
         # Create a non science file in the directory
-        dest_bn_4 = 'maven-not-a-real-file.txt'
-        dest_fn_4 = os.path.join(expected_dest_dir, dest_bn_4)
-        with open(dest_fn_4, 'w') as f:
+        dest_bn_3 = 'maven-not-a-real-file.txt'
+        dest_fn_3 = os.path.join(expected_dest_dir, dest_bn_3)
+        with open(dest_fn_3, 'w') as f:
             f.write('just here to make sure nothing breaks')
         
         # Create another older file in the directory that is the same as bn
         # Should remain.  Both bn and content match
-        dest_bn_5 = 'mvn_iuv_calibrated_collection_limb-inventory_20140404T000000.tab'
-        dest_fn_5 = os.path.join(expected_dest_dir, dest_bn_5)
-        with open(dest_fn_5, 'w') as f:
+        dest_bn_4 = bn
+        dest_fn_4 = os.path.join(expected_dest_dir, dest_bn_4)
+        with open(dest_fn_4, 'w') as f:
             f.write('just something to fill the file')
                      
         before_db_count = MavenDropboxMgrMove.query.count()
@@ -1172,14 +1039,12 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         
         # Check that the dest_bn files still exist
         self.assertTrue(os.path.exists((dest_fn_1)))
-        self.assertFalse(os.path.exists((dest_fn_2)))
-        self.assertTrue(os.path.exists((dest_fn_3)))
+        self.assertTrue(os.path.exists((dest_fn_2)))
         self.assertTrue(os.path.exists((dest_fn_3)))
         self.assertTrue(os.path.exists((dest_fn_4)))
-        self.assertTrue(os.path.exists((dest_fn_5)))
         
         # Check that src_fn was moved to the destination directory                 
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
         self.assertEqual(after_db_count, before_db_count + 1)
@@ -1188,6 +1053,10 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         self.assertEqual(m.dest_filename, dest_fn)
         self.assertEqual(m.md5, hashlib.md5(open(dest_fn).read().encode()).hexdigest())
         self.assertEqual(m.file_size, os.path.getsize(dest_fn))
+        with open(dest_fn, 'r') as f:
+            # Assert that the content of the file was updated with the newer text
+            content = f.readline()
+            self.assertEqual(content, 'just something newer to fill the file')
 
     def test_metadata_same_size_duplicates(self):
         expected_dest_dir = os.path.join(
@@ -1197,8 +1066,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         assert os.path.isdir(dest_dir)
         
         bn = 'collection_maven_iuvs_calibrated_limb_inventory.tab'
-        transformed_name = config.metadata_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_regex], bn))
         src_fn = os.path.join(self.root_source_directory, bn)
         with open(src_fn, 'w') as f:
             f.write('just something to fill the file')
@@ -1226,7 +1093,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists((dest_fn_1)))
 
         # Check that src_fn was moved to the destination directory                 
-        dest_fn = os.path.join(expected_dest_dir, transformed_name)
+        dest_fn = os.path.join(expected_dest_dir, bn)
         self.assertTrue(os.path.isfile(dest_fn))
         after_db_count = MavenDropboxMgrMove.query.count()
         self.assertEqual(after_db_count, before_db_count + 1)
@@ -1244,32 +1111,6 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
 
         misnamed_file = 'add/some/dir/structure/this_is_misnamed.for.sure'
         self.run_misnamed_file_check(misnamed_file)
-
-    def test_check_filename_transform_logger(self):
-
-        dest_dir = os.path.join(config.root_destination_directory, 'ngi')
-
-        os.makedirs(dest_dir)
-        assert os.path.isdir(dest_dir)
-        bn = 'collection_ngims_context.csv'
-        transformed_name = config.metadata_filename_transform(
-            file_pattern.matches_on_group([maven_config.metadata_regex], bn))
-        src_fn = os.path.join(self.root_source_directory, bn)
-        with open(src_fn, 'w') as f:
-            f.write('just something to fill the file')
-
-        utilities.move_valid_dropbox_file(src_fn,
-                                          self.invalid_dir,
-                                          self.dupe_dir)
-
-        ifile = open(constants.filename_transforms_location, 'r')
-        reader = csv.reader(ifile)
-        transform_dict = {}
-        for row in reader:
-            transform_dict[row[0]] = row[1]
-
-        self.assertTrue(transformed_name in transform_dict)
-        self.assertEqual(transform_dict[transformed_name], bn)
 
     def run_misnamed_file_check(self, source_file):
         '''Method used to run a misnamed file check on the provided file.

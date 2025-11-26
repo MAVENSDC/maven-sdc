@@ -597,7 +597,9 @@ def run_archive(start, end, instruments, root_dir, dry_run, user_notes=None, ove
                                             current_file_version,
                                             dry_run)
             elif 'metadata' in next_instrument_filters.plans:
-                metadata_path = os.path.join(root_dir, f'maven/data/sci/{next_instrument_filters.instrument}/metadata')
+                instrument_dir = next_instrument_filters.instrument
+                metadata_path = os.path.join(root_dir, f'maven/data/sci/{instrument_dir}/metadata')
+
                 bundle_files=[]
                 if os.path.isdir(metadata_path):
                     bundle_files = [os.path.join(os.path.abspath(metadata_path), f) for f in os.listdir(metadata_path)]
@@ -610,13 +612,13 @@ def run_archive(start, end, instruments, root_dir, dry_run, user_notes=None, ove
                 print_transfer_manifest(instrument_lidvids,
                                         archive_directory,
                                         manifest_file)
-
+                
                 checksums = tar_bundle_files(archive_directory,
                                              bundle_files,
                                              instrument_lidvids,
                                              bundle_file,
                                              dry_run,
-                                             progress,
+                                             archive_progress.ArchiveProgress(bundle_files, prefix=next_instrument),
                                              skip_no_label_files)
 
                 print_checksum_manifest(archive_directory,

@@ -31,10 +31,7 @@ class TestMakePdsArchiveMain(unittest.TestCase):
 
         self.root_dir = file_system.get_temp_root_dir()
         direct_out_logger.addHandler(self.test_handler)
-        constants.filename_transforms_location = os.path.join(self.root_dir, 'mavenpro', 'filename_transforms.csv')
         os.makedirs(os.path.join(self.root_dir, 'mavenpro'))
-        with open(constants.filename_transforms_location, 'w') as f:
-            f.write('somethingtofillthefile.csv,somethingtofillthefile2.csv')
 
     def tearDown(self):
         db_utils.delete_data()

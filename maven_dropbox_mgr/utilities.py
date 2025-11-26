@@ -100,14 +100,7 @@ def move_valid_dropbox_file(src_filename,
                 
             # generate file name
             dest_file_basename = src_filename
-            if next_rule.filename_transform is not None:
-                dest_file_basename = next_rule.filename_transform(m)
-                db_logger.info('DBM transformed %s into %s', src_filename, dest_file_basename)
             dest_filename = os.path.join(abs_dir, os.path.basename(dest_file_basename))
-                        
-            # Record any file name transforms
-            if next_rule.transform_record_keeping is not None:
-                next_rule.transform_record_keeping(bn, dest_file_basename)
             
             # Handle duplicates
             if next_rule.duplicate_check is not None:
@@ -117,10 +110,6 @@ def move_valid_dropbox_file(src_filename,
                     db_logger.info('Duplicate file found in %s, removing %s', abs_dir, src_filename)
                     os.remove(src_filename)
                     return None
-            
-            # Record any file name transforms
-            if next_rule.transform_record_keeping is not None:
-                next_rule.transform_record_keeping(bn, dest_file_basename)
             
             if next_rule.duplicate_check is not None:
                 action, discovered_dest_fname = next_rule.duplicate_check(src_filename, dest_filename)

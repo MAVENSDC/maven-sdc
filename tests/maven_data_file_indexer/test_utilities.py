@@ -77,15 +77,3 @@ class TestMavenDataFileIndexerUtilities(unittest.TestCase):
         self.assertNotEqual(ql_metadata, [])
         self.assertIn(os.path.basename(ql_filename), [x[1] for x in ql_metadata][0])
         self.assertIn(os.path.dirname(ql_filename), [x[0] for x in ql_metadata][0])
-    
-    def testGenerateMetadataforMetadata(self):
-        '''Test that metadata for metadata is generated for a given metadata file
-        '''
-        metadata_filename = os.path.join(self.src_directory, 'mvn_iuv_raw_collection_limb-inventory_20140711T224001.tab')
-        os.mkdir(metadata_filename)
-        self.assertIsNotNone(maven_config.metadata_index_regex.match(os.path.basename(metadata_filename)), 'does not match regex')
-        md = utilities.generate_metadata_for_metadata_file([metadata_filename])
-        md_metadata = list(md)
-        self.assertNotEqual(md_metadata, [])
-        self.assertIn(os.path.basename(metadata_filename), [x[1] for x in md_metadata][0])
-        self.assertIn(os.path.dirname(metadata_filename), [x[0] for x in md_metadata][0])

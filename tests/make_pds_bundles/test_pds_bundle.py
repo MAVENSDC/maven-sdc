@@ -82,7 +82,6 @@ class TestPdsBundles(unittest.TestCase):
         maven_log.config_logging()
         direct_out_logger.addHandler(self.test_handler)
         self.test_root = file_system.get_temp_root_dir()
-        constants.filename_transforms_location = os.path.join(self.test_root, 'mavenpro', 'filename_transforms.csv')
         os.makedirs(os.path.join(self.test_root, 'mavenpro'))
         post_fix = 'maven/data/sci'
         self.test_root_maven = os.path.join(self.test_root, post_fix)
@@ -96,9 +95,10 @@ class TestPdsBundles(unittest.TestCase):
 
         # Put into database
         test_utilities.populate_science_metadata(next_data[0] for next_data in self.metadata_for_test_files)
-
+        
         file_system.build_test_files_and_structure('some test data', self.test_root, [f[1] for f in self.metadata_for_test_files])
-        file_system.build_test_files_and_structure('some test data', self.test_root, self.metadata_files)
+        metadata_path = os.path.join(self.test_root, 'maven/data/sci/ngi/metadata')
+        file_system.build_test_files_and_structure('some test data', metadata_path, self.metadata_files)
 
         for next_file in [f[1] for f in self.metadata_for_test_files if os.path.basename(f[1]) in self.test_success_compressed_files]:
             with gzip.open(next_file, 'wb') as gz:
@@ -186,17 +186,16 @@ class TestPdsBundles(unittest.TestCase):
         make_pds_bundles.run_archive(self.test_start, self.test_end, ['ngi-meta'], self.test_root, False)
 
         # iterate over all the test files we expect to have archived
-        for test_file in [f[1] for f in self.metadata_for_metadata_files if os.path.basename(f[1]) in self.new_metadata_names_dict.keys()]:
-            instrument = 'ngi'
-            tgz_location = os.path.join(self.test_root, 'maven/data/arc/', instrument)
-            # assert the tgz was created
-            self.assertTrue(len([f for f in os.listdir(tgz_location) if '.tgz.1' in f]) == 1)
-            tgz_file = [f for f in os.listdir(tgz_location) if '.tgz.1' in f][0]
-            tgz_file = os.path.join(tgz_location, tgz_file)
-            with tarfile.open(tgz_file, 'r:gz') as opened_tgz_file:
-                test_file_without_path = os.path.split(test_file)[1]
-                transformed_name = self.new_metadata_names_dict[test_file_without_path]
-                self.assertTrue(transformed_name in [os.path.split(f.name)[1] for f in opened_tgz_file], 'File %s was not in the tgz %s' % (transformed_name, [f.name for f in opened_tgz_file]))
+        instrument = 'ngi'
+        tgz_location = os.path.join(self.test_root, 'maven/data/arc/', instrument)
+        # assert the tgz was created
+        self.assertTrue(len([f for f in os.listdir(tgz_location) if '.tgz.1' in f]) == 1)
+        tgz_file = [f for f in os.listdir(tgz_location) if '.tgz.1' in f][0]
+        tgz_file = os.path.join(tgz_location, tgz_file)
+        with tarfile.open(tgz_file, 'r:gz') as opened_tgz_file:
+            assert len(opened_tgz_file.getnames())==len(self.metadata_files)
+            for f in opened_tgz_file:
+                self.assertTrue(os.path.split(f.name)[1] in self.metadata_files)
 
     def test_event_tarball(self):
         make_pds_bundles.run_archive(self.test_start, self.test_end, [config.all_key], self.test_root, False)
