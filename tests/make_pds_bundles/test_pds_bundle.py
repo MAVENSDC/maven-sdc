@@ -189,13 +189,13 @@ class TestPdsBundles(unittest.TestCase):
         instrument = 'ngi'
         tgz_location = os.path.join(self.test_root, 'maven/data/arc/', instrument)
         # assert the tgz was created
-        self.assertTrue(len([f for f in os.listdir(tgz_location) if '.tgz.1' in f]) == 1)
+        self.assertEqual(len([f for f in os.listdir(tgz_location) if '.tgz.1' in f]), 1)
         tgz_file = [f for f in os.listdir(tgz_location) if '.tgz.1' in f][0]
         tgz_file = os.path.join(tgz_location, tgz_file)
         with tarfile.open(tgz_file, 'r:gz') as opened_tgz_file:
             assert len(opened_tgz_file.getnames())==len(self.metadata_files)
             for f in opened_tgz_file:
-                self.assertTrue(os.path.split(f.name)[1] in self.metadata_files)
+                self.assertIn(os.path.split(f.name)[1], self.metadata_files)
 
     def test_event_tarball(self):
         make_pds_bundles.run_archive(self.test_start, self.test_end, [config.all_key], self.test_root, False)

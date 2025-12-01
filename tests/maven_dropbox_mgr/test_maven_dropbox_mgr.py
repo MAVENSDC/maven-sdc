@@ -1022,7 +1022,7 @@ class MavenDropboxMgrTestCase(unittest.TestCase):
             f.write('just here to make sure nothing breaks')
         
         # Create another older file in the directory that is the same as bn
-        # Should remain.  Both bn and content match
+        # Will be overwritten by the source file, regardless of content 
         dest_bn_4 = bn
         dest_fn_4 = os.path.join(expected_dest_dir, dest_bn_4)
         with open(dest_fn_4, 'w') as f:

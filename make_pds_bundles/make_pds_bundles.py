@@ -600,9 +600,10 @@ def run_archive(start, end, instruments, root_dir, dry_run, user_notes=None, ove
                 instrument_dir = next_instrument_filters.instrument
                 metadata_path = os.path.join(root_dir, f'maven/data/sci/{instrument_dir}/metadata')
 
-                bundle_files=[]
+                bundle_files = []
                 if os.path.isdir(metadata_path):
-                    bundle_files = [os.path.join(os.path.abspath(metadata_path), f) for f in os.listdir(metadata_path)]
+                    bundle_files = [os.path.join(os.path.abspath(metadata_path), f) for f in os.listdir(metadata_path) 
+                                    if os.path.isfile(os.path.join(metadata_path, f))]
 
                 archive_directory = os.path.join(root_dir, 'maven/data/arc', instrument_dir)
                 current_file_version = get_latest_version(archive_directory) + 1

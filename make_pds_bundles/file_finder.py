@@ -217,7 +217,6 @@ class InventoryFileFinder():
                 if compare(next_sfmd, next_inv_entry, self.results_version, self.results_revision) == 0:
                     yield os.path.join(next_sfmd.directory_path, next_sfmd.file_name)
                     next_inv_entry = inv_entries.pop(0)
-            query.session.commit()
 
             # gather remaining inv entries
             for _next in inv_entries:

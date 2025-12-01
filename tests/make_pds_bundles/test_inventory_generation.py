@@ -72,7 +72,7 @@ class TestInventoryGeneration(unittest.TestCase):
         self.generate_pds_inventory_file(file_names=self.test_good_files + self.test_out_of_window_files,
                                          urn='maven.iuvs.raw',
                                          level='limb',
-                                         file_name=os.path.join(self.test_root_maven, 'iuv', 'metadata', self.inv_file_path))
+                                         file_name=self.inv_file_path)
 
     def tearDown(self):
         db_utils.delete_data(ScienceFilesMetadata, AncillaryFilesMetadata, PdsArchiveRecord, MavenStatus)
