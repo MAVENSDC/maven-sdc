@@ -1,7 +1,6 @@
 '''
 This modules provides the Dropbox Manager rules for:
   - Detecting Dropbox files based on regular expressions applied to file names
-  - Transforming files names
   - Determine dropbox locations
 
 The PatternDestinationRule set 'file_rules' below defines these rules for the various
