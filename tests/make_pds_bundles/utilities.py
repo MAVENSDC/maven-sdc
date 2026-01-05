@@ -26,17 +26,6 @@ def get_metadata(test_science_files, root_dir):
     return metadata_results
 
 
-def get_metadata_metadata(test_meta_files, root_dir):
-    ''' Method used to generate metadata for the set of provided science files '''
-    metadata_results = []
-    for f in test_meta_files:
-        next_result = generate_metadata_for_metadata_file(f, root_dir)
-        assert next_result is not None, 'was not able to generate metadata for %s' % f
-        next_root_path = os.path.join(next_result.directory_path, next_result.file_name)
-        metadata_results.append((next_result, next_root_path))
-    return metadata_results
-
-
 def generate_metadata_for_science_file(filename, rd):
     '''Returns the metadata embedded in the quicklook, KP, level 1, 2, or 3 file name.
     Argument
@@ -46,7 +35,6 @@ def generate_metadata_for_science_file(filename, rd):
     m = file_pattern.extract_parts([maven_config.science_regex,
                                     maven_config.kp_regex,
                                     maven_config.label_regex,
-                                    maven_config.metadata_index_regex,
                                     maven_config.euv_regex,
                                     maven_config.euv_flare_regex,
                                     maven_config.euv_flare_catalog_regex],

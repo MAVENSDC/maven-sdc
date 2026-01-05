@@ -42,9 +42,6 @@ def upsert_fs_metadata(fs_data, handle_exception=None):
         elif file_pattern.matches_on_group([maven_config.l0_regex],
                                            bn):
             l0_metadata.append(utilities.get_metadata_for_l0_file(_next.path_name))
-        elif file_pattern.matches_on_group([maven_config.metadata_index_regex],
-                                           bn):
-            sci_metadata.append(utilities.get_metadata_for_metadata_file(_next.path_name))
         elif file_pattern.matches_on_group([maven_config.ql_regex],
                                            bn):
             sci_metadata.append(utilities.get_metadata_for_ql_file(_next.path_name))
@@ -70,7 +67,6 @@ def delete_fs_metadata(fs_data):
                                           maven_config.sep_anc_regex,
                                           maven_config.euv_l2b_regex,
                                           maven_config.l0_regex,
-                                          maven_config.metadata_index_regex,
                                           maven_config.ql_regex,
                                           maven_config.euv_regex,
                                           maven_config.euv_flare_regex,

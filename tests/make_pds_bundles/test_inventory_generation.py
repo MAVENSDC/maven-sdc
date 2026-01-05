@@ -59,12 +59,6 @@ class TestInventoryGeneration(unittest.TestCase):
         self.test_root = file_system.get_temp_root_dir()
         self.test_root_maven = os.path.join(self.test_root, 'maven/data/sci')
 
-        # hijack filename_transforms
-        tmp_transforms_file = os.path.join(self.test_root, 'filename_transforms.csv')
-        constants.filename_transforms_location = tmp_transforms_file
-        with open(tmp_transforms_file, 'w'):
-            pass
-
         self.metadata_for_test_files = test_utilities.get_metadata(self.test_good_files + 
                                                                    self.test_good_label_files + 
                                                                    self.test_bad_label_files + 
@@ -74,14 +68,11 @@ class TestInventoryGeneration(unittest.TestCase):
         file_system.build_test_files_and_structure('some test data', self.test_root, [f[1] for f in self.metadata_for_test_files])
 
         self.inv_file_name = 'mvn_iuv_raw_collection_limb-inventory_20140711T224001.tab'
+        self.inv_file_path = os.path.join(self.test_root_maven, 'iuv', 'metadata', self.inv_file_name)
         self.generate_pds_inventory_file(file_names=self.test_good_files + self.test_out_of_window_files,
                                          urn='maven.iuvs.raw',
                                          level='limb',
-                                         file_name=os.path.join(self.test_root_maven, 'iuv', 'metadata', self.inv_file_name))
-
-        inv_file_metadata = test_utilities.get_metadata_metadata([self.inv_file_name],
-                                                                 self.test_root_maven)
-        test_utilities.populate_science_metadata(next_data[0] for next_data in inv_file_metadata)
+                                         file_name=self.inv_file_path)
 
     def tearDown(self):
         db_utils.delete_data(ScienceFilesMetadata, AncillaryFilesMetadata, PdsArchiveRecord, MavenStatus)
@@ -92,15 +83,15 @@ class TestInventoryGeneration(unittest.TestCase):
     def test_inventory_pds_generation(self):
         # Hijack iuv PDS settings:
         config.instrument_config['iuv'] = config.ScienceFileSearchParameters(instrument='iuv',
-                                                                             levels=['raw'],
+                                                                             levels=[],
                                                                              plans=[],
                                                                              groups=[],
                                                                              descs=[],
-                                                                             exts=['tab'],
+                                                                             exts=[],
                                                                              file_name=None,
                                                                              ver=None,
                                                                              rev=None,
-                                                                             as_inv_file=True,
+                                                                             as_inv_file=self.inv_file_path,
                                                                              uprev_inv_file=False,
                                                                              label_ver=1,
                                                                              label_rev=0)
@@ -130,17 +121,17 @@ class TestInventoryGeneration(unittest.TestCase):
         self.generate_pds_inventory_file(file_names=self.test_good_files + extra_sci_files,
                                          urn='maven.iuvs.raw',
                                          level='limb',
-                                         file_name=os.path.join(self.test_root_maven, 'iuv', 'metadata', self.inv_file_name))
+                                         file_name=self.inv_file_path)
         config.instrument_config['iuv'] = config.ScienceFileSearchParameters(instrument='iuv',
-                                                                             levels=['raw'],
+                                                                             levels=[],
                                                                              plans=[],
                                                                              groups=[],
                                                                              descs=[],
-                                                                             exts=['tab'],
+                                                                             exts=[],
                                                                              file_name=None,
                                                                              ver=None,
                                                                              rev=None,
-                                                                             as_inv_file=True,
+                                                                             as_inv_file=self.inv_file_path,
                                                                              uprev_inv_file=False,
                                                                              label_ver=1,
                                                                              label_rev=0)

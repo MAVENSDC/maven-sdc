@@ -358,32 +358,6 @@ root_verrev_ext_pattern = (r'(?P<{0}>[a-zA-Z0-9_\-]+?)'  # ? lazy consumption to
 
 root_verrev_ext_regex = re.compile(root_verrev_ext_pattern)
 
-metadata_index_pattern = (r'^mvn_(?P<{0}>[a-zA-Z0-9]+)_'
-                          '(?P<{1}>[a-zA-Z0-9]+)?_?'
-                          '(?P<{2}>collection|bundle|sis|caveats|readme|version-changes)'
-                          '(?P<{3}>_[0-9a-zA-Z\-]+|)_'
-                          '(?P<{4}>[0-9]{{4}})'
-                          '(?P<{5}>[0-9]{{2}})'
-                          '(?P<{6}>[0-9]{{2}})'
-                          '(?P<{7}>|T[0-9]{{6}}|t[0-9]{{6}})'
-                          '(?P<{8}>|_v(?P<{9}>[0-9]+)_r(?P<{10}>[0-9]+))\.'
-                          '(?P<{11}>xml|tab|csv|xlsx|pdf|txt)'
-                          '(?P<{12}>\.gz)*').format(file_pattern.general_instrument_group,
-                                                    file_pattern.general_level_group,
-                                                    meta_type_group,
-                                                    meta_description,
-                                                    file_pattern.general_year_group,
-                                                    file_pattern.general_month_group,
-                                                    file_pattern.general_day_group,
-                                                    file_pattern.general_hhmmss_group,
-                                                    file_pattern.general_version_revision_group,
-                                                    file_pattern.general_version_group,
-                                                    file_pattern.general_revision_group,
-                                                    file_pattern.general_extension_group,
-                                                    file_pattern.general_gz_extension_group)
-
-metadata_index_regex = re.compile(metadata_index_pattern)
-
 metadata_caveats_pattern = (r'(?P<{0}>[a-zA-Z0-9]+)_'
                             '(?P<{1}>[a-zA-Z0-9]+)_'
                             '(?P<{2}>caveats)'

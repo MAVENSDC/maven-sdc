@@ -63,15 +63,14 @@ class TestPdsBundles(unittest.TestCase):
                           'mvn_swi_l2_finesvy3d_20140319.xml',
                           'mvn_swi_l2_onboardsvymom_20140319_v01_r03.cdf'
                           ]
-    new_metadata_names_dict = {'mvn_ngi_l1b_collection_inventory_20141201T135601.xml': 'collection_ngims_l1b_inventory.xml',
-                               'mvn_ngi_l1b_collection_inventory_20141201T135601.csv': 'collection_ngims_l1b_inventory.csv',
-                               'mvn_ngi_document_collection_20141201T135601.xml': 'collection_ngims_document.xml',
-                               'mvn_ngi_document_collection_20141201T135601.csv': 'collection_ngims_document.csv',
-                               'mvn_ngi_xml_collection_schema_20141201T135601.xml': 'collection_ngims_xml_schema.xml',
-                               'mvn_ngi_xml_collection_schema_20141201T135601.tab': 'collection_ngims_xml_schema.tab',
-                               'mvn_ngi_pds_sis_20141201T135601.xml': 'ngims_pds_sis.xml',
-                               'mvn_ngi_pds_sis_20141201T135601.pdf': 'ngims_pds_sis.pdf'
-                               }
+    metadata_files = ['collection_ngims_l1b_inventory.xml',
+                      'collection_ngims_l1b_inventory.csv',
+                      'collection_ngims_document.xml',
+                      'collection_ngims_document.csv',
+                      'collection_ngims_xml_schema.xml',
+                      'collection_ngims_xml_schema.tab',
+                      'ngims_pds_sis.xml',
+                      'ngims_pds_sis.pdf']
     test_success_compressed_files = ['mvn_swi_l2_onboardsvymom_20140319.xml.gz']
     test_miss_files = [
         'mvn_euv_l0_bands_20141018_v00_r00.cdf',  # l0
@@ -83,7 +82,6 @@ class TestPdsBundles(unittest.TestCase):
         maven_log.config_logging()
         direct_out_logger.addHandler(self.test_handler)
         self.test_root = file_system.get_temp_root_dir()
-        constants.filename_transforms_location = os.path.join(self.test_root, 'mavenpro', 'filename_transforms.csv')
         os.makedirs(os.path.join(self.test_root, 'mavenpro'))
         post_fix = 'maven/data/sci'
         self.test_root_maven = os.path.join(self.test_root, post_fix)
@@ -95,21 +93,12 @@ class TestPdsBundles(unittest.TestCase):
                                                                    self.test_success_compressed_files,
                                                                    self.test_root_maven)
 
-        self.metadata_for_metadata_files = test_utilities.get_metadata_metadata(self.new_metadata_names_dict.keys(),
-                                                                                self.test_root_maven)
-
         # Put into database
         test_utilities.populate_science_metadata(next_data[0] for next_data in self.metadata_for_test_files)
-        test_utilities.populate_science_metadata(next_data[0] for next_data in self.metadata_for_metadata_files)
-
+        
         file_system.build_test_files_and_structure('some test data', self.test_root, [f[1] for f in self.metadata_for_test_files])
-        file_system.build_test_files_and_structure('some test data', self.test_root, [f[1] for f in self.metadata_for_metadata_files])
-
-        with open(constants.filename_transforms_location, 'a') as ofile:
-            writer = csv.writer(ofile)
-            for new_name, old_name in self.new_metadata_names_dict.items():
-                writer.writerow([new_name, old_name])
-            ofile.close()
+        metadata_path = os.path.join(self.test_root, 'maven/data/sci/ngi/metadata')
+        file_system.build_test_files_and_structure('some test data', metadata_path, self.metadata_files)
 
         for next_file in [f[1] for f in self.metadata_for_test_files if os.path.basename(f[1]) in self.test_success_compressed_files]:
             with gzip.open(next_file, 'wb') as gz:
@@ -197,17 +186,16 @@ class TestPdsBundles(unittest.TestCase):
         make_pds_bundles.run_archive(self.test_start, self.test_end, ['ngi-meta'], self.test_root, False)
 
         # iterate over all the test files we expect to have archived
-        for test_file in [f[1] for f in self.metadata_for_metadata_files if os.path.basename(f[1]) in self.new_metadata_names_dict.keys()]:
-            instrument = 'ngi'
-            tgz_location = os.path.join(self.test_root, 'maven/data/arc/', instrument)
-            # assert the tgz was created
-            self.assertTrue(len([f for f in os.listdir(tgz_location) if '.tgz.1' in f]) == 1)
-            tgz_file = [f for f in os.listdir(tgz_location) if '.tgz.1' in f][0]
-            tgz_file = os.path.join(tgz_location, tgz_file)
-            with tarfile.open(tgz_file, 'r:gz') as opened_tgz_file:
-                test_file_without_path = os.path.split(test_file)[1]
-                transformed_name = self.new_metadata_names_dict[test_file_without_path]
-                self.assertTrue(transformed_name in [os.path.split(f.name)[1] for f in opened_tgz_file], 'File %s was not in the tgz %s' % (transformed_name, [f.name for f in opened_tgz_file]))
+        instrument = 'ngi'
+        tgz_location = os.path.join(self.test_root, 'maven/data/arc/', instrument)
+        # assert the tgz was created
+        self.assertEqual(len([f for f in os.listdir(tgz_location) if '.tgz.1' in f]), 1)
+        tgz_file = [f for f in os.listdir(tgz_location) if '.tgz.1' in f][0]
+        tgz_file = os.path.join(tgz_location, tgz_file)
+        with tarfile.open(tgz_file, 'r:gz') as opened_tgz_file:
+            assert len(opened_tgz_file.getnames())==len(self.metadata_files)
+            for f in opened_tgz_file:
+                self.assertIn(os.path.split(f.name)[1], self.metadata_files)
 
     def test_event_tarball(self):
         make_pds_bundles.run_archive(self.test_start, self.test_end, [config.all_key], self.test_root, False)
