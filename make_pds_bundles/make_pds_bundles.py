@@ -151,6 +151,12 @@ def get_md5_checksums(files):
 
 
 def get_instrument_filters(instrument, override_inst_config):
+    '''
+    Returns a dictionary of filters for the database query. 
+
+    Will decide between the default instrument configuration located in config.py,
+    or a an "override" file located elsewhere, if the user specifies one. 
+    '''
     override_config = imp.load_source("override_config", override_inst_config) if override_inst_config else None
     if override_config is not None and (
             config.ScienceFileSearchParameters._fields != override_config.ScienceFileSearchParameters._fields):

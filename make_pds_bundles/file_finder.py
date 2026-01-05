@@ -228,6 +228,8 @@ class InventoryFileFinder():
         finally:
             for _next in missing_inv:
                 self.missing_file_handler(_next)
+            if hasattr(query, 'session'):
+                query.session.close()
 
 
 
