@@ -4,6 +4,9 @@
 # Kim Kokkonen, 2015-06-12
 # Heather Cronk, 2023-08-09: Update for https instead of ftp
 
+
+# NOTE: In Phase F, we no longer expect this directory on NAIF to be updated. 
+
 # local_basedir is assumed to exist
 local_basedir=/maven/data/anc/orb
 https_listdir=$(curl -s https://naif.jpl.nasa.gov/pub/naif/MAVEN/kernels/spk/ | grep -o 'href=".*">' | sed -e "s/href=\"//g" | sed -e "s/\">//g")

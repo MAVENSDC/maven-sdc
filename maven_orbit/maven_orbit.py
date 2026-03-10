@@ -83,7 +83,8 @@ def synchronize_orbit_data(root_directory):
             if next_orbit.orbit_number not in orbits_dict.keys():
                 orbit_db_session.add(next_orbit)
             else:
-                removed_orbit_ids.remove(next_orbit.orbit_number)
+                if next_orbit.orbit_number in removed_orbit_ids:
+                    removed_orbit_ids.remove(next_orbit.orbit_number)
                 if not next_orbit == orbits_dict[next_orbit.orbit_number]:
                     # pylint: disable=E1101
                     orbit_db_session.merge(next_orbit)
