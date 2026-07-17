@@ -32,6 +32,8 @@ MISC_DIR = 'misc'
 EUV_FLARE_DIR = 'sci/euv/swx'
 EUV_L2B_DIR = 'sci/euv/l2b'
 EUV_L3B_DIR = 'sci/euv/l3b'
+EUV_L3C_DIR = 'sci/euv/l3c'
+EUV_L4_DIR = 'sci/euv/l4'
 
 directory_time_format = '%Y%m%dT%H%M%S'
 site_sim_dir_pattern = re.compile('site-([0-9]{8}T[0-9]{6})')
@@ -658,12 +660,16 @@ def build_site(root_dir,
     data_flare_dir = os.path.join(source_root_dir, EUV_FLARE_DIR)
     data_euv_l2b_dir = os.path.join(source_root_dir, EUV_L2B_DIR)
     data_euv_l3b_dir = os.path.join(source_root_dir, EUV_L3B_DIR)
+    data_euv_l3c_dir = os.path.join(source_root_dir, EUV_L3C_DIR)
+    data_euv_l4_dir = os.path.join(source_root_dir, EUV_L4_DIR)
     site_orb_dir = os.path.join(site_base_dir, ORB_DIR)
     site_optg_dir = os.path.join(site_base_dir, OPTG_DIR)
     site_spice_dir = os.path.join(site_base_dir, SPICE_DIR)
     site_flare_dir = os.path.join(site_base_dir, EUV_FLARE_DIR)
     site_euv_l2b_dir = os.path.join(site_base_dir, EUV_L2B_DIR)
     site_euv_l3b_dir = os.path.join(site_base_dir, EUV_L3B_DIR)
+    site_euv_l3c_dir = os.path.join(site_base_dir, EUV_L3C_DIR)
+    site_euv_l4_dir = os.path.join(site_base_dir, EUV_L4_DIR)
     site_symlink_anc_dir = os.path.join(root_dir, ANC_DIR)
     site_symlink_sci_dir = os.path.join(root_dir, SCI_DIR)
     site_symlink_misc_dir = os.path.join(root_dir, MISC_DIR)
@@ -713,6 +719,12 @@ def build_site(root_dir,
     if os.path.exists(data_euv_l3b_dir) and not os.path.exists(site_euv_l3b_dir):
         os.symlink(data_euv_l3b_dir, site_euv_l3b_dir)
         os.chmod(site_euv_l3b_dir, 0o755)
+    if os.path.exists(data_euv_l3c_dir) and not os.path.exists(site_euv_l3c_dir):
+        os.symlink(data_euv_l3c_dir, site_euv_l3c_dir)
+        os.chmod(site_euv_l3c_dir, 0o755)
+    if os.path.exists(data_euv_l4_dir) and not os.path.exists(site_euv_l4_dir):
+        os.symlink(data_euv_l4_dir, site_euv_l4_dir)
+        os.chmod(site_euv_l4_dir, 0o755)
     
 
 
